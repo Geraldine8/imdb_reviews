@@ -68,17 +68,17 @@ top_neg_docs <- names(sort(doc_sentiment, decreasing = FALSE)[1:20])
 
 
 #Visualize the word frequencies:
-# Create a frequency table
-library(ggplot2)
-
 # Create a data frame of the document names and sentiment scores
 doc_sentiment_df <- data.frame(Document = rownames(dtm_mat), Sentiment = doc_sentiment)
 
 # Create a bar chart of the sentiment scores
-doc_sentiment_df_filtered <- doc_sentiment_df %>% filter(Sentiment != 0)
-
-ggplot(doc_sentiment_df_filtered, aes(x = Document, y = Sentiment)) +
+doc_sentiment_df_filtered <- doc_sentiment_df %>% 
+  filter(abs(Sentiment) > 1) %>% 
+  top_n(20, abs(Sentiment)) %>% 
+  ggplot(aes(x = Document, y = Sentiment)) +
   geom_bar(stat = "identity", fill = "blue") +
   ggtitle("Sentiment Scores by Document") +
   xlab("Document") +
-  ylab("Sentiment Score")
+  ylab("Sentiment Score")+
+  theme_bw()
+View(doc_sentiment_df_filtered)
