@@ -39,7 +39,6 @@ imdb_data <- tm_map(imdb_data, stemDocument)
 # Create a term matrix and store it as dtm
 dtm <- TermDocumentMatrix(imdb_data)
 
-
 # Identify terms that occur frequently in the corpus
 freq_terms <- findFreqTerms(dtm, lowfreq = 10, highfreq = Inf)
 
@@ -61,8 +60,9 @@ sentiment_scores <- sapply(rownames(dtm_mat), function(x) sum(afinn[afinn$word =
 
 # Get the total sentiment score for each document in the corpus
 doc_sentiment <- rowSums(dtm_mat * sentiment_scores)
+View(doc_sentiment)
 
-# Get the top 10 positive and negative documents based on sentiment score
+# Get the top 20 positive and negative documents based on sentiment score
 top_pos_docs <- names(sort(doc_sentiment, decreasing = TRUE)[1:20])
 top_neg_docs <- names(sort(doc_sentiment, decreasing = FALSE)[1:20])
 
@@ -74,11 +74,32 @@ doc_sentiment_df <- data.frame(Document = rownames(dtm_mat), Sentiment = doc_sen
 # Create a bar chart of the sentiment scores
 doc_sentiment_df_filtered <- doc_sentiment_df %>% 
   filter(abs(Sentiment) > 1) %>% 
-  top_n(20, abs(Sentiment)) %>% 
-  ggplot(aes(x = Document, y = Sentiment)) +
-  geom_bar(stat = "identity", fill = "blue") +
-  ggtitle("Sentiment Scores by Document") +
-  xlab("Document") +
-  ylab("Sentiment Score")+
-  theme_bw()
-View(doc_sentiment_df_filtered)
+  top_n(20, abs(Sentiment))
+
+# # Define the colors for positive and negative sentiments
+pos_color <- "#f67280"  # light blue
+  neg_color <- "#00a7d1"
+    
+  # Create the plot
+  ggplot(doc_sentiment_df_filtered, aes(x = Sentiment, y = reorder(Document, Sentiment))) +
+    geom_bar(stat = "identity", aes(fill = ifelse(Sentiment >= 0, "Positive", "Negative"))) +
+    scale_fill_manual(values = c(pos_color, neg_color), name = "Sentiment") +
+    coord_flip() +
+    labs(x = "Sentiment Score", y = "Words") +
+    ggtitle("Sentiment Scores by Words") +
+    theme_bw() +
+    theme(axis.title = element_text(size = 16),
+          plot.title = element_text(size = 20, face = "bold"),
+          legend.title = element_text(size = 14),
+          legend.text = element_text(size = 12))
+  
+  # Load some example text
+  text <- c("This is great!", "This is terrible.", "this is awesome")
+  
+  # Get the sentiment scores for each sentence
+  sentiment_scores <- sentiment_by(text, by = "sentence")
+  
+  # Print the sentiment scores
+  print(sentiment_scores)
+  
+  
