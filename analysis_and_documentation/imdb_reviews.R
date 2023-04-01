@@ -8,6 +8,7 @@ library(textdata)
 library(textstem)
 library(ggplot2)
 library(wordcloud)
+library(viridis)
 
 
 imdb_data <- readLines("data/IMDB_dataset.csv")
@@ -58,6 +59,7 @@ View(dtm_freq)
 afinn <- get_sentiments("afinn")
 dtm_mat <- as.matrix(dtm_freq)
 sentiment_scores <- sapply(rownames(dtm_mat), function(x) sum(afinn[afinn$word == x, "value"]))
+
 
 # Get the total sentiment score for each document in the corpus
 doc_sentiment <- rowSums(dtm_mat * sentiment_scores)
@@ -112,3 +114,35 @@ word_freq_df <- data.frame(word = names(term_freq), freq = term_freq)
 wordcloud(words = word_freq_df$word, freq = word_freq_df$freq,
           min.freq = 100, max.words = 100, random.order = FALSE,
           colors = brewer.pal(8, "Dark2"))
+
+
+# Filter negative words based on sentiment score
+neg_words <- word_freq_df[sentiment_scores < 0,]
+View(neg_words)
+View(afinn)
+
+# Plot top 20 negative words using bar chart
+negative <- afinn[afinn$value < 0,]
+neg_words <- word_freq_df[word_freq_df$word %in% negative$word, ]
+ggplot(neg_words[1:20, ], aes(x = freq, y = word, fill = word)) +
+  geom_bar(stat = "identity") +
+  coord_cartesian(ylim = c(0, 20)) +
+  scale_fill_viridis(discrete = TRUE) +
+  labs(x = "Frequency", y = "Words", title = "Top 20 most frequent negative words")+
+  theme_bw()
+
+
+negative <- afinn[afinn$value < 0,]
+neg_words <- word_freq_df[word_freq_df$word %in% negative$word, ]
+neg_words <- neg_words[order(neg_words$freq, decreasing = TRUE), ][1:20, ]
+ggplot(neg_words, aes(x = freq, y = reorder(word, freq), fill = word)) +
+  geom_bar(stat = "identity") +
+  scale_fill_viridis(discrete = TRUE, option = "plasma") +
+  labs(x = "Frequency", y = "Words", title = "Top 20 most frequent negative words")+
+  # theme_bw()+
+  coord_cartesian(ylim = c(0, 20))+
+  theme_light()
+
+
+
+
