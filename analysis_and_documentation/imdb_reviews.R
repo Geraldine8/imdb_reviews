@@ -7,6 +7,7 @@ library(lexicon)
 library(textdata)
 library(textstem)
 library(ggplot2)
+library(wordcloud)
 
 
 imdb_data <- readLines("data/IMDB_dataset.csv")
@@ -80,26 +81,34 @@ doc_sentiment_df_filtered <- doc_sentiment_df %>%
 pos_color <- "#f67280"  # light blue
   neg_color <- "#00a7d1"
     
-  # Create the plot
-  ggplot(doc_sentiment_df_filtered, aes(x = Sentiment, y = reorder(Document, Sentiment))) +
-    geom_bar(stat = "identity", aes(fill = ifelse(Sentiment >= 0, "Positive", "Negative"))) +
-    scale_fill_manual(values = c(pos_color, neg_color), name = "Sentiment") +
-    coord_flip() +
-    labs(x = "Sentiment Score", y = "Words") +
-    ggtitle("Sentiment Scores by Words") +
-    theme_bw() +
-    theme(axis.title = element_text(size = 16),
-          plot.title = element_text(size = 20, face = "bold"),
-          legend.title = element_text(size = 14),
-          legend.text = element_text(size = 12))
-  
-  # Load some example text
-  text <- c("This is great!", "This is terrible.", "this is awesome")
-  
-  # Get the sentiment scores for each sentence
-  sentiment_scores <- sentiment_by(text, by = "sentence")
-  
-  # Print the sentiment scores
-  print(sentiment_scores)
-  
-  
+# Create the plot
+ggplot(doc_sentiment_df_filtered, aes(x = Sentiment, y = reorder(Document, Sentiment))) +
+  geom_bar(stat = "identity", aes(fill = ifelse(Sentiment >= 0, "Positive", "Negative"))) +
+  scale_fill_manual(values = c(pos_color, neg_color), name = "Sentiment") +
+  coord_flip() +
+  labs(x = "Sentiment Score", y = "Words") +
+  ggtitle("Sentiment Scores by Words") +
+  theme_bw() +
+  theme(axis.title = element_text(size = 16),
+        plot.title = element_text(size = 20, face = "bold"),
+        legend.title = element_text(size = 14),
+        legend.text = element_text(size = 12))
+
+
+
+# Convert the corpus to a document-term matrix
+dtm <- DocumentTermMatrix(imdb_data)
+
+# Find the most frequent terms in the corpus
+freq_terms <- findFreqTerms(dtm, lowfreq = 100)
+
+# Get the frequency of each term in the corpus
+term_freq <- colSums(as.matrix(dtm[, freq_terms]))
+
+# Create a data frame with the terms and their frequencies
+word_freq_df <- data.frame(word = names(term_freq), freq = term_freq)
+
+# Create the word cloud
+wordcloud(words = word_freq_df$word, freq = word_freq_df$freq,
+          min.freq = 100, max.words = 100, random.order = FALSE,
+          colors = brewer.pal(8, "Dark2"))
