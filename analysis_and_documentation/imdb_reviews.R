@@ -118,20 +118,7 @@ wordcloud(words = word_freq_df$word, freq = word_freq_df$freq,
 
 # Filter negative words based on sentiment score
 neg_words <- word_freq_df[sentiment_scores < 0,]
-View(neg_words)
-View(afinn)
-
 # Plot top 20 negative words using bar chart
-negative <- afinn[afinn$value < 0,]
-neg_words <- word_freq_df[word_freq_df$word %in% negative$word, ]
-ggplot(neg_words[1:20, ], aes(x = freq, y = word, fill = word)) +
-  geom_bar(stat = "identity") +
-  coord_cartesian(ylim = c(0, 20)) +
-  scale_fill_viridis(discrete = TRUE) +
-  labs(x = "Frequency", y = "Words", title = "Top 20 most frequent negative words")+
-  theme_bw()
-
-
 negative <- afinn[afinn$value < 0,]
 neg_words <- word_freq_df[word_freq_df$word %in% negative$word, ]
 neg_words <- neg_words[order(neg_words$freq, decreasing = TRUE), ][1:20, ]
@@ -139,10 +126,17 @@ ggplot(neg_words, aes(x = freq, y = reorder(word, freq), fill = word)) +
   geom_bar(stat = "identity") +
   scale_fill_viridis(discrete = TRUE, option = "plasma") +
   labs(x = "Frequency", y = "Words", title = "Top 20 most frequent negative words")+
-  # theme_bw()+
   coord_cartesian(ylim = c(0, 20))+
   theme_light()
 
-
-
-
+# Filter positive words based on sentiment score
+post_words <- word_freq_df[sentiment_scores > 0,]
+positive   <- afinn[afinn$value > 0,]
+post_words <- word_freq_df[word_freq_df$word %in% positive$word, ]
+post_words <- post_words[order(post_words$freq, decreasing = TRUE), ][1:20, ]
+ggplot(post_words, aes(x = freq, y = reorder(word, freq), fill = word)) +
+  geom_bar(stat = "identity") +
+  scale_fill_viridis(discrete = TRUE) +
+  labs(x = "Frequency", y = "Words", title = "Top 20 most frequent positive words")+
+  coord_cartesian(ylim = c(0, 20))+
+  theme_light()
