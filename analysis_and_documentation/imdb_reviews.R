@@ -9,6 +9,8 @@ library(textstem)
 library(ggplot2)
 library(wordcloud)
 library(viridis)
+library(readr)
+library(tidyr)
 
 
 imdb_data <- readLines("data/IMDB_dataset.csv")
@@ -140,3 +142,9 @@ ggplot(post_words, aes(x = freq, y = reorder(word, freq), fill = word)) +
   labs(x = "Frequency", y = "Words", title = "Top 20 most frequent positive words")+
   coord_cartesian(ylim = c(0, 20))+
   theme_light()
+
+
+
+
+
+
